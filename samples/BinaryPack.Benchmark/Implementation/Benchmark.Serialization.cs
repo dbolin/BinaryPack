@@ -3,6 +3,7 @@ using BenchmarkDotNet.Attributes;
 using JsonTextWriter = Newtonsoft.Json.JsonTextWriter;
 using Utf8JsonWriter = System.Text.Json.Utf8JsonWriter;
 using Utf8JsonSerializer = Utf8Json.JsonSerializer;
+using Apex.Serialization;
 
 namespace BinaryPack.Benchmark.Implementations
 {
@@ -11,7 +12,7 @@ namespace BinaryPack.Benchmark.Implementations
         /// <summary>
         /// Serialization powered by <see cref="Newtonsoft.Json.JsonSerializer"/>
         /// </summary>
-        [Benchmark(Baseline = true)]
+        //[Benchmark(Baseline = true)]
         [BenchmarkCategory(SERIALIZATION)]
         public void NewtonsoftJson1()
         {
@@ -27,7 +28,7 @@ namespace BinaryPack.Benchmark.Implementations
         /// <summary>
         /// Serialization powered by <see cref="System.Runtime.Serialization.Formatters.Binary.BinaryFormatter"/>
         /// </summary>
-        [Benchmark]
+        //[Benchmark]
         [BenchmarkCategory(SERIALIZATION)]
         public void BinaryFormatter1()
         {
@@ -40,7 +41,7 @@ namespace BinaryPack.Benchmark.Implementations
         /// <summary>
         /// Serialization powered by <see cref="System.Text.Json.JsonSerializer"/>
         /// </summary>
-        [Benchmark]
+        //[Benchmark]
         [BenchmarkCategory(SERIALIZATION)]
         public void NetCoreJson1()
         {
@@ -53,7 +54,7 @@ namespace BinaryPack.Benchmark.Implementations
         /// <summary>
         /// Serialization powered by <see cref="System.Runtime.Serialization.Json.DataContractJsonSerializer"/>
         /// </summary>
-        [Benchmark]
+        //[Benchmark]
         [BenchmarkCategory(SERIALIZATION)]
         public void DataContractJsonSerializer1()
         {
@@ -66,7 +67,7 @@ namespace BinaryPack.Benchmark.Implementations
         /// <summary>
         /// Serialization powered by <see cref="System.Xml.Serialization.XmlSerializer"/>
         /// </summary>
-        [Benchmark]
+        //[Benchmark]
         [BenchmarkCategory(SERIALIZATION)]
         public void XmlSerializer1()
         {
@@ -79,7 +80,7 @@ namespace BinaryPack.Benchmark.Implementations
         /// <summary>
         /// Serialization powered by <see cref="Portable.Xaml.XamlServices"/>
         /// </summary>
-        [Benchmark]
+        //[Benchmark]
         [BenchmarkCategory(SERIALIZATION)]
         public void PortableXaml1()
         {
@@ -91,7 +92,7 @@ namespace BinaryPack.Benchmark.Implementations
         /// <summary>
         /// Serialization powered by <see cref="Utf8JsonSerializer"/>
         /// </summary>
-        [Benchmark]
+        //[Benchmark]
         [BenchmarkCategory(SERIALIZATION)]
         public void Utf8Json1()
         {
@@ -103,7 +104,7 @@ namespace BinaryPack.Benchmark.Implementations
         /// <summary>
         /// Serialization powered by <see cref="MessagePack.MessagePackSerializer"/>
         /// </summary>
-        [Benchmark]
+        //[Benchmark]
         [BenchmarkCategory(SERIALIZATION)]
         public void MessagePack1()
         {
@@ -112,6 +113,8 @@ namespace BinaryPack.Benchmark.Implementations
             MessagePack.MessagePackSerializer.Serialize(stream, Model, MessagePack.Resolvers.ContractlessStandardResolver.Instance);
         }
 
+        private readonly MemoryStream _binaryPackStream = new MemoryStream();
+
         /// <summary>
         /// Serialization powered by <see cref="BinaryConverter"/>
         /// </summary>
@@ -119,9 +122,22 @@ namespace BinaryPack.Benchmark.Implementations
         [BenchmarkCategory(SERIALIZATION)]
         public void BinaryPack1()
         {
-            using Stream stream = new MemoryStream();
+            _binaryPackStream.Seek(0, SeekOrigin.Begin);
+            BinaryConverter.Serialize(Model, _binaryPackStream);
+        }
 
-            BinaryConverter.Serialize(Model, stream);
+        private readonly IBinary _apex = Binary.Create();
+        private readonly MemoryStream _apexStream = new MemoryStream();
+
+        /// <summary>
+        /// Serialization powered by <see cref="Binary"/>
+        /// </summary>
+        [Benchmark]
+        [BenchmarkCategory(SERIALIZATION)]
+        public void Apex1()
+        {
+            _apexStream.Seek(0, SeekOrigin.Begin);
+            _apex.Write(Model, _apexStream);
         }
     }
 }

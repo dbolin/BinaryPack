@@ -43,6 +43,8 @@ namespace BinaryPack.Benchmark.Implementations
 
         private byte[] BinaryPackData;
 
+        private byte[] ApexData;
+
         /// <summary>
         /// Initial setup for a benchmarking session
         /// </summary>
@@ -51,7 +53,7 @@ namespace BinaryPack.Benchmark.Implementations
         {
             Model.Initialize();
             T deserializedModel;
-
+            /*
             // Newtonsoft
             using (MemoryStream stream = new MemoryStream())
             {
@@ -166,7 +168,7 @@ namespace BinaryPack.Benchmark.Implementations
 
                 if (!Model.Equals(deserializedModel)) throw new InvalidOperationException("Failed comparison with MessagePack");
             }
-
+            */
             // BinaryPack
             using (MemoryStream stream = new MemoryStream())
             {
@@ -178,6 +180,19 @@ namespace BinaryPack.Benchmark.Implementations
                 deserializedModel = BinaryConverter.Deserialize<T>(stream);
 
                 if (!Model.Equals(deserializedModel)) throw new InvalidOperationException("Failed comparison with BinaryPack");
+            }
+
+            // Apex
+            using (MemoryStream stream = new MemoryStream())
+            {
+                _apex.Write(Model, stream);
+
+                ApexData = stream.GetBuffer();
+
+                stream.Seek(0, SeekOrigin.Begin);
+                deserializedModel = _apex.Read<T>(stream);
+
+                if (!Model.Equals(deserializedModel)) throw new InvalidOperationException("Failed comparison with Apex");
             }
         }
     }
